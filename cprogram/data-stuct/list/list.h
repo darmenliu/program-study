@@ -8,23 +8,23 @@
 
 struct list{
     struct list *prev;
-    sturct list *next;
-}
+    struct list *next;
+};
 
 
-static void list_init(struct list* list);
-static void list_poison(struct list* list);
+void list_init(struct list* list);
 
-static void list_insert(struct list* list, struct list* node);
-static void list_push_front(struct list* list, struct list* node);
-static void list_push_back(struct list* list, struct list* node);
-static void list_splice(struct list* before, struct list* first, struct list* last);
+void list_insert_before(struct list* before, struct list* node);
+void list_insert_behind(struct list* behind, struct list* node);
+void list_push_front(struct list* head, struct list* node);
+void list_push_back(struct list* list, struct list* node);
+void list_splice(struct list* before, struct list* first, struct list* last);
 
-static struct list* list_remove(struct list* node);
-static struct list* list_pop_front(struct list* node);
-static struct list* list_pop_back(struct list* node);
+struct list* list_remove(struct list* node);
+struct list* list_pop_front(struct list* node);
+struct list* list_pop_back(struct list* node);
 
-static unsigned int list_size(const struct list* list);
-static bool list_is_empty(const struct list* list);
+unsigned int list_size(const struct list* list);
+bool list_is_empty(const struct list* list);
 
 #endif
