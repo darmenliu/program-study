@@ -21,12 +21,38 @@ void list_insert_behind(struct list* behind, struct list* node);
 void list_push_front(struct list* head, struct list* node);
 void list_push_back(struct list* list, struct list* node);
 void list_splice(struct list* before, struct list* first, struct list* last);
+void list_replace(struct list* node, struct list* position);
 
 struct list* list_remove(struct list* node);
 struct list* list_pop_front(struct list* head);
 struct list* list_pop_back(struct list* head);
+struct list* list_front(struct list* head);
+struct list* list_back(struct list* head);
 
-unsigned int list_size(const struct list* list);
-bool list_is_empty(const struct list* list);
+#define LIST_FOR_EACH(ITER, MEMBER, LIST)                               \
+    for (INIT_CONTAINER(ITER, (LIST)->next, MEMBER);                    \
+         &(ITER)->MEMBER != (LIST);                                     \
+         ASSIGN_CONTAINER(ITER, (ITER)->MEMBER.next, MEMBER))
+#define LIST_FOR_EACH_CONTINUE(ITER, MEMBER, LIST)                      \
+    for (ASSIGN_CONTAINER(ITER, (ITER)->MEMBER.next, MEMBER);             \
+         &(ITER)->MEMBER != (LIST);                                     \
+         ASSIGN_CONTAINER(ITER, (ITER)->MEMBER.next, MEMBER))
+#define LIST_FOR_EACH_REVERSE(ITER, MEMBER, LIST)                       \
+    for (INIT_CONTAINER(ITER, (LIST)->prev, MEMBER);                    \
+         &(ITER)->MEMBER != (LIST);                                     \
+         ASSIGN_CONTAINER(ITER, (ITER)->MEMBER.prev, MEMBER))
+#define LIST_FOR_EACH_REVERSE_CONTINUE(ITER, MEMBER, LIST)              \
+    for (ASSIGN_CONTAINER(ITER, (ITER)->MEMBER.prev, MEMBER);           \
+         &(ITER)->MEMBER != (LIST);                                     \
+         ASSIGN_CONTAINER(ITER, (ITER)->MEMBER.prev, MEMBER))
+#define LIST_FOR_EACH_SAFE(ITER, NEXT, MEMBER, LIST)               \
+    for (INIT_CONTAINER(ITER, (LIST)->next, MEMBER);               \
+         (&(ITER)->MEMBER != (LIST)                                \
+          ? INIT_CONTAINER(NEXT, (ITER)->MEMBER.next, MEMBER), 1   \
+          : 0);                                                    \
+         (ITER) = (NEXT))
+#define LIST_FOR_EACH_POP(ITER, MEMBER, LIST)                      \
+    while (!list_is_empty(LIST)                                    \
+           && (INIT_CONTAINER(ITER, list_pop_front(LIST), MEMBER), 1))
 
 #endif

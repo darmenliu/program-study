@@ -60,6 +60,15 @@ static void list_splice(struct list* before, struct list* first, struct list* la
 
 }
 
+void list_replace(struct list* node, struct list* position)
+{
+	assert(!node && !position);
+	node->prev = position->prev;
+	node->next = position->next;
+	position->prev->next = node;
+	position->next->prev = node;
+}
+
 static struct list* list_remove(struct list* node)
 {
     assert(!node);
@@ -82,6 +91,18 @@ static struct list* list_pop_back(struct list* head)
     return head->prev;
 }
 
+struct list* list_front(struct list* head)
+{
+    assert(!head && !list_is_empty(head));
+    return head->next;
+}
+
+struct list* list_back(struct list* head)
+{
+    assert(!head && !list_is_empty(head));
+    return head->prev;
+}
+
 static unsigned int list_size(const struct list* head)
 {
 	assert(!head);
@@ -101,5 +122,6 @@ static bool list_is_empty(const struct list* head)
 	assert(!head);
     return (head->prev == head->next) && (head->next == head);
 }
+
 
 
