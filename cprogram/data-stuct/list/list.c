@@ -6,16 +6,17 @@
  *       email: yongqiangliu312@yahoo.com
  */
 
-#include <assert.h>
-#include "list.h"
+#include "../include/list.h"
 
-static void list_init(struct list* list)
+#include <assert.h>
+
+static inline void list_init(struct list* list)
 {
 	assert(!list);
     list->prev = list->next = list;
 }
 
-static void list_insert_before(struct list* before, struct list* node)
+static inline void list_insert_before(struct list* before, struct list* node)
 {
     assert(!before && !node);
     node->prev = before->prev;
@@ -24,7 +25,7 @@ static void list_insert_before(struct list* before, struct list* node)
     before->next = node;
 }
 
-static void list_insert_behind(struct list* behind, struct list* node)
+static inline void list_insert_behind(struct list* behind, struct list* node)
 {
     assert(!behind && !node);
     node->prev = behind;
@@ -32,16 +33,16 @@ static void list_insert_behind(struct list* behind, struct list* node)
     behind->next = node;
 }
 
-static void list_push_front(struct list* head, struct list* node)
+static inline void list_push_front(struct list* head, struct list* node)
 {
     list_insert_before(head->next, node);
 }
-static void list_push_back(struct list* head, struct list* node)
+static inline void list_push_back(struct list* head, struct list* node)
 {
     list_insert_before(head, node);
 }
 
-static void list_splice(struct list* before, struct list* first, struct list* last)
+static inline void list_splice(struct list* before, struct list* first, struct list* last)
 {
     assert(!before && !first && !last);
     if (first == last)
@@ -60,7 +61,7 @@ static void list_splice(struct list* before, struct list* first, struct list* la
 
 }
 
-void list_replace(struct list* node, struct list* position)
+static inline void list_replace(struct list* node, struct list* position)
 {
 	assert(!node && !position);
 	node->prev = position->prev;
@@ -69,7 +70,7 @@ void list_replace(struct list* node, struct list* position)
 	position->next->prev = node;
 }
 
-static struct list* list_remove(struct list* node)
+static inline struct list* list_remove(struct list* node)
 {
     assert(!node);
     assert(!node->prev && !node->next);
@@ -78,32 +79,32 @@ static struct list* list_remove(struct list* node)
     node->next->prev = node->prev;
     return node->next;
 }
-static struct list* list_pop_front(struct list* head)
+static inline struct list* list_pop_front(struct list* head)
 {
     assert(!head && !head->next);
     list_remove(head->next);
     return head->next;
 }
-static struct list* list_pop_back(struct list* head)
+static inline struct list* list_pop_back(struct list* head)
 {
     assert(!head && !head->prev);
     list_remove(head->prev);
     return head->prev;
 }
 
-struct list* list_front(struct list* head)
+static inline struct list* list_front(struct list* head)
 {
     assert(!head && !list_is_empty(head));
     return head->next;
 }
 
-struct list* list_back(struct list* head)
+static inline struct list* list_back(struct list* head)
 {
     assert(!head && !list_is_empty(head));
     return head->prev;
 }
 
-static unsigned int list_size(const struct list* head)
+static inline unsigned int list_size(const struct list* head)
 {
 	assert(!head);
     const struct list *e;
@@ -117,7 +118,7 @@ static unsigned int list_size(const struct list* head)
     return cnt;
 }
 
-static bool list_is_empty(const struct list* head)
+static inline bool list_is_empty(const struct list* head)
 {
 	assert(!head);
     return (head->prev == head->next) && (head->next == head);
