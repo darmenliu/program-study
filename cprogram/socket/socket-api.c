@@ -11,7 +11,11 @@ enum SA_ERROR {
     SOCKET_ERROR = -1,
     NON_BLOCK_ERROR,
 	GET_ADDR_ERROR,
+	BIND_ADDR_ERROR,
+	LISTEN_ERROR,
 };
+
+#define LENGTH_OF_LISTEN_QUEUE 64
 
 int set_nonblocking(int fd, int nonblocking)
 {
@@ -91,11 +95,21 @@ int get_socket_addr(char *host, int port, int type, struct sockaddr_in *addr)
     return 0;
 }
 
-int tcp_stream_open(int port, int non_block, int *fd)
+int tcp_stream_server(char *host, int port, int non_block, int *fd)
 {
     int sock = 0;
     int err = 0;
     struct sockaddr_in addr;
+    unsigned int yes = 1;
+    struct sockaddr_in addr;
+    
+    
+    err = get_socket_addr(host, port, SOCK_STREAM, &addr);
+    if (err)
+    {
+        fprintf(stderr, "get socket address error\n");
+        return err;
+    }
     
     sock = socket(PF_INET, SOCK_STREAM, 0);
     if (sock < 0)
@@ -106,11 +120,41 @@ int tcp_stream_open(int port, int non_block, int *fd)
     err = set_nonblocking(fd, non_block);
     if (err)
     {
+        fprintf(stderr, "set socket nonblock error\n");
         close(fd);
-        return error;
+        return err;
+    }
+    
+    err = setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof yes);
+    if (err)
+    {
+        fprintf(stderr, "set socket opt SO_REUSEADDR error\n");
+        close(fd);
+        return err;
+    }
+    
+    err = bind(fd, (struct sockaddr *)&addr, sizeof(addr));
+    if (err)
+    {
+        fprintf(stderr, "bind socket with address error\n");
+        close(fd);
+        return BIND_ADDR_ERROR;
+    }
+    
+    err = listen(fd, LENGTH_OF_LISTEN_QUEUE);
+    if (err)
+    {
+        fprintf(stderr, "listen socket error");
+        close(fd);
+        return LISTEN_ERROR;
     }
     
     return 0;
+}
+
+int tcp_stream_client(int port, int non_block, int *fd)
+{
+    
 }
 
 int udp_stream_open()
