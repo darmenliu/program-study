@@ -13,6 +13,7 @@ enum SA_ERROR {
 	GET_ADDR_ERROR,
 	BIND_ADDR_ERROR,
 	LISTEN_ERROR,
+	CONNECT_ERROR
 };
 
 #define LENGTH_OF_LISTEN_QUEUE 64
@@ -42,7 +43,7 @@ int set_nonblocking(int fd, int nonblocking)
     return 0;
 }
 
-int get_socket_addr(char *host, int port, int type, struct sockaddr_in *addr)
+int get_socket_addr(char *host_server, int port, int type, struct sockaddr_in *addr)
 {
     struct addrinfo *addrlist = 0;
     struct addrinfo hint;
@@ -52,7 +53,7 @@ int get_socket_addr(char *host, int port, int type, struct sockaddr_in *addr)
     int family = AF_INET;
     int protocol = 0;
     
-    if (host)
+    if (host_server)
     {
        memset(&hint, 0, sizeof(hint)); 
        hint.ai_family = family;
@@ -63,7 +64,7 @@ int get_socket_addr(char *host, int port, int type, struct sockaddr_in *addr)
        hint.ai_next = NULL;
        sprintf(ports, "%d", port);
 
-       err = getaddrinfo(host, ports, &hint, &addrlist);
+       err = getaddrinfo(host_server, ports, &hint, &addrlist);
        if (err)
        {
     	   fprintf(stderr, "getaddrinfo error: %s\n", gai_strerror(err));
@@ -95,16 +96,15 @@ int get_socket_addr(char *host, int port, int type, struct sockaddr_in *addr)
     return 0;
 }
 
-int tcp_stream_server(char *host, int port, int non_block, int *fd)
+int tcp_stream_server(char *host_server, int port, int non_block, int *fd)
 {
     int sock = 0;
     int err = 0;
     struct sockaddr_in addr;
     unsigned int yes = 1;
-    struct sockaddr_in addr;
     
     
-    err = get_socket_addr(host, port, SOCK_STREAM, &addr);
+    err = get_socket_addr(host_server, port, SOCK_STREAM, &addr);
     if (err)
     {
         fprintf(stderr, "get socket address error\n");
@@ -148,13 +148,73 @@ int tcp_stream_server(char *host, int port, int non_block, int *fd)
         close(fd);
         return LISTEN_ERROR;
     }
-    
+
+    *fd = sock;
     return 0;
 }
 
-int tcp_stream_client(int port, int non_block, int *fd)
+int tcp_stream_client(char *host_server, int port, int non_block, int *fd)
 {
+    int sock;
+    int err = 0;
+    struct sockaddr_in server_addr;
+    struct sockaddr_in client_addr;
+
+    bzero(&client_addr, sizeof(client_addr));
+    client_addr.sin_family = AF_INET; //internet协议族
+    client_addr.sin_addr.s_addr = htons(INADDR_ANY); //自动获取本机地址
+    client_addr.sin_port = htons(0); //系统自动分配一个空闲的端口；
+
+    bzero(&server_addr, sizeof(server_addr));
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(port);
+    if(inet_aton(host_server, &server_addr.sin_addr) == 0)
+    {
+    	fprintf(stderr, "get host ip address error\n");
+    	return GET_ADDR_ERROR;
+    }
+
+    sock = socket(PF_INET, SOCK_STREAM, 0);
+    if (sock < 0)
+    {
+    	fprintf(stderr, "open socket error\n");
+        return SOCKET_ERROR;
+    }
+
+    err = set_nonblocking(sock, non_block);
+    if (err)
+    {
+        fprintf(stderr, "set socket nonblock error\n");
+        close(sock);
+        return err;
+    }
+
+    err = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof yes);
+    if (err)
+    {
+        fprintf(stderr, "set socket opt SO_REUSEADDR error\n");
+        close(sock);
+        return err;
+    }
+
+    err = bind(sock, (struct sockaddr *)&client_addr, sizeof(addr));
+    if (err)
+    {
+        fprintf(stderr, "bind socket with address error\n");
+        close(sock);
+        return BIND_ADDR_ERROR;
+    }
+
+    err = connect(sock, (struct sockaddr*)&server_addr, sizeof(server_addr));
+    if (err)
+    {
+        fprintf(stderr, "bind socket with address error\n");
+        close(sock);
+        return CONNECT_ERROR;
+    }
+    *fd = sock;
     
+    return 0;
 }
 
 int udp_stream_open()
