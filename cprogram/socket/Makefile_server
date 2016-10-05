@@ -1,0 +1,12 @@
+objects = server.o socket-api.o
+
+cc = gcc
+
+server : $(objects)
+
+server.o : server.c socket-api.h
+socket-api.o : socket-api.c socket-api.h
+clean :
+	rm server  $(object)
+
+

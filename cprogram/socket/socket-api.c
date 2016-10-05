@@ -92,9 +92,9 @@ int get_socket_addr(char *host_server, int port, int type, struct sockaddr_in *a
     else
     {
     	memset(addr, 0, sizeof(struct sockaddr_in));
-        addr.sin_family = AF_INET;
-        addr.sin_addr.s_addr = htons(INADDR_ANY);
-        addr.sin_port = htons(port);
+        addr->sin_family = AF_INET;
+        addr->sin_addr.s_addr = htons(INADDR_ANY);
+        addr->sin_port = htons(port);
     }
     return 0;
 }
@@ -120,39 +120,40 @@ int tcp_stream_server(char *host_server, int port, int non_block, int *fd)
     	fprintf(stderr, "open socket error\n");
         return SOCKET_ERROR;
     }
-    err = set_nonblocking(fd, non_block);
+    err = set_nonblocking(sock, non_block);
     if (err)
     {
         fprintf(stderr, "set socket nonblock error\n");
-        close(fd);
+        close(sock);
         return err;
     }
     
-    err = setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof yes);
+    err = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof yes);
     if (err)
     {
         fprintf(stderr, "set socket opt SO_REUSEADDR error\n");
-        close(fd);
+        close(sock);
         return err;
     }
     
-    err = bind(fd, (struct sockaddr *)&addr, sizeof(addr));
+    err = bind(sock, (struct sockaddr *)&addr, sizeof(addr));
     if (err)
     {
         fprintf(stderr, "bind socket with address error\n");
-        close(fd);
+        close(sock);
         return BIND_ADDR_ERROR;
     }
     
-    err = listen(fd, LENGTH_OF_LISTEN_QUEUE);
+    err = listen(sock, LENGTH_OF_LISTEN_QUEUE);
     if (err)
     {
         fprintf(stderr, "listen socket error");
-        close(fd);
+        close(sock);
         return LISTEN_ERROR;
     }
 
     *fd = sock;
+    close(sock);
     return 0;
 }
 
@@ -160,6 +161,7 @@ int tcp_stream_client(char *host_server, int port, int non_block, int *fd)
 {
     int sock;
     int err = 0;
+    int yes = 1;
     struct sockaddr_in server_addr;
     struct sockaddr_in client_addr;
 
@@ -200,7 +202,7 @@ int tcp_stream_client(char *host_server, int port, int non_block, int *fd)
         return err;
     }
 
-    err = bind(sock, (struct sockaddr *)&client_addr, sizeof(addr));
+    err = bind(sock, (struct sockaddr *)&client_addr, sizeof(client_addr));
     if (err)
     {
         fprintf(stderr, "bind socket with address error\n");
