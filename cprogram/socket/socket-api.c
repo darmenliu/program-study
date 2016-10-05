@@ -6,6 +6,9 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include "socket-api.h"
 
 enum SA_ERROR {
     SOCKET_ERROR = -1,
@@ -219,11 +222,11 @@ int tcp_stream_client(char *host_server, int port, int non_block, int *fd)
 
 int udp_stream_open()
 {
-    
+    return 0;
 }
 
 
 int unix_stream_open()
 {
-    
+    return 0;
 }
