@@ -10,7 +10,8 @@
 
 int tcp_stream_server(char *host_server, int port, int non_block, int *fd);
 int tcp_stream_client(char *host_server, int port, int non_block, int *fd);
-
+int tcp_stream_accept(int server_sock, int *client_sock);
+int tcp_socket_close(int sock);
 
 
 

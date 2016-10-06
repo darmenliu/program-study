@@ -16,7 +16,8 @@ enum SA_ERROR {
 	GET_ADDR_ERROR,
 	BIND_ADDR_ERROR,
 	LISTEN_ERROR,
-	CONNECT_ERROR
+	CONNECT_ERROR,
+	ACCEPT_ERROR,
 };
 
 #define LENGTH_OF_LISTEN_QUEUE 64
@@ -147,7 +148,7 @@ int tcp_stream_server(char *host_server, int port, int non_block, int *fd)
     err = listen(sock, LENGTH_OF_LISTEN_QUEUE);
     if (err)
     {
-        fprintf(stderr, "listen socket error");
+        fprintf(stderr, "listen socket error\n");
         close(sock);
         return LISTEN_ERROR;
     }
@@ -155,6 +156,24 @@ int tcp_stream_server(char *host_server, int port, int non_block, int *fd)
     *fd = sock;
     close(sock);
     return 0;
+}
+
+int tcp_stream_accept(int server_sock, int *client_sock)
+{
+	struct sockaddr_in client_addr;
+	int c_sock;
+	socklen_t length = sizeof(client_addr);
+
+	c_sock = accept(server_sock, (struct sockaddr*)&client_addr, &length);
+	if (c_sock < 0)
+	{
+		fprintf(stderr, "Server accept failed!\n");
+		return ACCEPT_ERROR;
+	}
+
+    fprintf(stderr, "Client connected\n");
+	*client_sock = c_sock;
+	return 0;
 }
 
 int tcp_stream_client(char *host_server, int port, int non_block, int *fd)
@@ -231,4 +250,9 @@ int udp_stream_open()
 int unix_stream_open()
 {
     return 0;
+}
+
+int tcp_socket_close(int sock)
+{
+	close(sock);
 }
