@@ -171,7 +171,7 @@ int tcp_stream_accept(int server_sock, int *client_sock)
 		return ACCEPT_ERROR;
 	}
 
-    fprintf(stderr, "Client connected\n");
+	fprintf(stderr, "Client connected\n");
 	*client_sock = c_sock;
 	return 0;
 }
